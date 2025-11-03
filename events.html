@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>이벤트 | 더보트 – 프리미엄 밸리보트</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --brand-red:#E60012; --ink-900:#111; --ink-700:#333; --ink-500:#666;
+  --surface:#FAFAF8; --surface-alt:#F3F3F2; --white:#fff;
+  --radius:14px; --shadow-sm:0 6px 20px rgba(0,0,0,.06); --shadow-md:0 10px 30px rgba(0,0,0,.08);
+  --s1:8px; --s2:12px; --s3:16px; --s4:24px; --s5:32px; --s6:48px; --max:1200px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:"Noto Sans KR",system-ui,Apple SD Gothic Neo,Malgun Gothic,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink-900); background:var(--surface); line-height:1.6}
+a{text-decoration:none; color:inherit}
+h1,h2,h3{margin:0 0 var(--s3); line-height:1.25; letter-spacing:-.02em}
+.serif{font-family:"Playfair Display",serif}
+.container{max-width:var(--max); margin-inline:auto; padding-inline:var(--s4)}
+.section{padding-block:var(--s6)}
+
+/* Header */
+.site-header{position:sticky; top:0; z-index:100; background:rgba(250,250,248,.78); backdrop-filter:saturate(120%) blur(8px); border-bottom:1px solid rgba(0,0,0,.06)}
+.site-header .bar{height:72px; display:flex; align-items:center; justify-content:space-between}
+.logo{font-weight:800; letter-spacing:.08em}
+.nav{display:flex; gap:40px; align-items:center}
+.nav a{font-weight:500; padding:8px 4px}
+.nav a:hover{color:var(--brand-red)}
+.nav a.is-active{color:var(--brand-red); font-weight:700}
+.btn{display:inline-flex; align-items:center; justify-content:center; height:46px; padding:0 22px; border-radius:999px; font-weight:700; border:1px solid transparent; transition:transform .12s, box-shadow .12s, background .12s}
+.btn-primary{background:var(--brand-red); color:#fff; box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:var(--shadow-md)}
+.btn-outline{background:transparent; border-color:var(--brand-red); color:var(--brand-red)}
+.btn-outline:hover{background:rgba(230,0,18,.08)}
+.btn-nav-wide{min-width:200px; padding:0 32px}
+.toggle{display:none; background:transparent; border:0; width:42px; height:42px; align-items:center; justify-content:center}
+@media (max-width:991px){
+  .nav{position:fixed; inset:72px 0 auto 0; background:rgba(250,250,248,.98); flex-direction:column; gap:16px; padding:24px; transform:translateY(-8px); opacity:0; pointer-events:none; transition:opacity .2s}
+  .nav.active{opacity:1; pointer-events:auto}
+  .toggle{display:inline-flex}
+  .nav-cta{display:inline-flex}
+}
+
+/* Page Hero */
+.page-hero{background:var(--surface-alt); border-bottom:1px solid rgba(0,0,0,.06)}
+.page-hero .wrap{padding-block:var(--s6); display:grid; gap:8px}
+.page-hero h1{font-size:clamp(32px,4vw,48px)}
+.page-hero p{color:var(--ink-500)}
+
+/* Event grid */
+.grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.card{
+  grid-column:span 12; background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:var(--radius);
+  overflow:hidden; box-shadow:var(--shadow-sm); position:relative; transition:.12s transform, .12s box-shadow;
+}
+.card:hover{transform:translateY(-2px); box-shadow:var(--shadow-md)}
+.card.split{display:grid; grid-template-columns:480px 1fr}
+.thumb{position:relative; z-index:0; background:#eee; aspect-ratio:16/9}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.body{position:relative; z-index:1; background:#fff; padding:24px}
+.meta{color:var(--ink-500); font-size:14px; margin-top:4px; margin-bottom:12px}
+.badge{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; color:#fff; background:var(--brand-red)}
+.price-list{margin:8px 0 0 0; padding:0 0 0 18px}
+.price-list li{margin:6px 0}
+.price-old{color:#999; text-decoration:line-through}
+.price-now{font-weight:800; color:#111}
+.note{color:#666; font-size:14px; margin-top:10px}
+
+/* YouTube CTA card */
+.card.youtube .body{display:grid; gap:8px}
+.card.youtube .actions{margin-top:8px}
+
+/* Footer (간략) */
+.site-footer{background:#111; color:#bbb; padding-block:var(--s6); margin-top:var(--s6)}
+.footer-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.footer-col{grid-column:span 4; font-size:14px}
+.footer-col h3{color:#fff; margin-bottom:8px; font-size:16px}
+@media (max-width:1200px){
+  .card.split{grid-template-columns:1fr}
+  .footer-col{grid-column:span 12}
+}
+.bizbox{margin-top:24px; padding:16px; border:1px solid rgba(255,255,255,.08); border-radius:12px; text-align:center; color:#9a9a9a; font-size:13px; background:rgba(255,255,255,.02)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08); margin-top:24px; padding-top:16px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:13px}
+	
+/* --- YouTube 카드 겹침 해결용 보강 --- */
+.card{ position:relative; isolate:isolate; }           /* 카드 자체 쌓임 컨텍스트 생성 */
+.thumb{ display:block; position:relative; z-index:0; } /* 이미지 레이어 */
+.thumb img{ display:block; width:100%; height:100%; object-fit:cover; }
+.card .body{ position:relative; z-index:2; background:#fff; } /* 텍스트/버튼 레이어 */
+
+.card.youtube{ display:grid; grid-template-columns:520px 1fr; } /* 데스크탑에선 좌우 배치 */
+@media (max-width:900px){ .card.youtube{ grid-template-columns:1fr; } }
+
+/* 혹시 다른 곳에서 만든 오버레이가 있다면 무력화 */
+.thumb::after{ content:none !important; }
+
+/* 헤더 네비의 빨간 CTA가 다른 규칙에 가려질 때 강제 복구 */
+.nav .btn.btn-primary,
+.nav .btn.btn-primary span {
+  color: #fff !important;         /* 흰색 텍스트 고정 */
+  text-indent: 0 !important;      /* 혹시 숨김 처리 대비 */
+  font-size: 16px;                 /* 보장된 가독 크기 */
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 링크 기본 규칙이 버튼까지 덮어쓰지 않도록 가드 */
+.nav a.btn.btn-primary { 
+  color: #fff !important; 
+}
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="bar container">
+    <a href="index.html" class="logo serif">THE BOAT</a>
+    <nav id="mainNav" class="nav" aria-label="주 메뉴">
+      <a href="index.html">홈</a>
+      <a href="product.html">제품</a>
+      <a href="events.html" class="is-active">이벤트</a>
+      <a href="gallery.html">갤러리</a>
+      <a href="contact.html">문의</a>
+      <a class="btn btn-primary btn-nav-wide nav-cta" href="booking.html">체험/상담 예약</a>
+    </nav>
+    <button id="navToggle" class="toggle" aria-label="메뉴 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="container wrap">
+    <h1 class="serif">이벤트</h1>
+    <p>진행 중인 프로모션과 혜택을 확인하세요.</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+    <div class="grid">
+
+      <!-- 2025년 마지막 시즌 이벤트 -->
+      <article class="card split" id="bf-2025">
+        <div class="thumb">
+          <!-- 이미지 교체 가능 -->
+          <img src="img/2025 마지막 시즌 이벤트 배너 (이미지 교체).jpg" alt="2025년 마지막 시즌 이벤트 배너">
+        </div>
+        <div class="body">
+          <h2 class="serif">2025년 마지막 시즌 이벤트</h2>
+          <p class="meta">EBS ‘한국기행’ “왔다! 주꾸미” 방영 기념 · 블랙프라이데이 특별가</p>
+          <ul class="price-list">
+            <li>올뉴에스 : <span class="price-old">1,650,000원</span> → <span class="price-now">1,550,000원</span> <span class="badge">-100,000</span></li>
+            <li>더보트 심플 : <span class="price-old">1,852,000원</span> → <span class="price-now">1,702,000원</span> <span class="badge">-150,000</span></li>
+            <li>올뉴페달밸리 : <span class="price-old">2,199,000원</span> → <span class="price-now">2,049,000원</span> <span class="badge">-150,000</span></li>
+          </ul>
+          <p class="note">* 중복할인 제외 · 할인구매 문의 <strong>010-3307-5809</strong></p>
+          <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap">
+            <a class="btn btn-primary" href="booking.html">체험/상담 예약</a>
+            <a class="btn btn-outline" href="product.html">베스트 상품 보기</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 웨이포인트(좌표) 입력 이벤트 -->
+      <article class="card split" id="waypoint">
+        <div class="thumb">
+          <img src="img/웨이포인트(좌표) 입력 이벤트 배너 (이미지 교체).jpg" alt="웨이포인트(좌표) 입력 이벤트">
+        </div>
+        <div class="body">
+          <h2 class="serif">웨이포인트(좌표) 입력 이벤트</h2>
+          <ul class="price-list" style="margin-top:0">
+            <li>좌표수 : 총 1,336개 (어초좌표 X, 피쉬랜딩좌표 O)</li>
+            <li>2016~2023년 태안·보령권 밸리보트 포인트, 바이트 직후 랜딩 마킹 ‘빈바늘’ 좌표</li>
+            <li>랜딩 어종 : 광어, 농어, 우럭, 삼치, 놀래미, 백조기, 주꾸미, 갑오징어, 배스(일부)</li>
+            <li>대상 : <strong>더보트 앨리먼트 어탐</strong> 구입 고객</li>
+          </ul>
+          <div style="margin-top:12px">
+            <a class="btn btn-primary" href="contact.html">문의하기</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 유튜브 채널 카드 (이미지/텍스트/버튼 모두 노출 + 전체 클릭 가능) -->
+      <article class="card youtube" id="youtube">
+        <a class="thumb" href="https://www.youtube.com/@story221" target="_blank" rel="noopener">
+          <img src="img/더보트 유튜브 이미지.jpg" alt="‘더보트 밸리보트 story’ 유튜브 채널">
+        </a>
+        <div class="body">
+          <h2 class="serif"><a href="https://www.youtube.com/@story221" target="_blank" rel="noopener" style="color:inherit">‘더보트 밸리보트 story’ 유튜브</a></h2>
+          <p>더보트의 제품, 조립방법, 런칭, 랜딩, 운용, 모임 등 다양한 동영상을 확인하세요.</p>
+          <div class="actions">
+            <a class="btn btn-outline" href="https://www.youtube.com/@story221" target="_blank" rel="noopener">채널 바로가기</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 class="serif">더보트</h3>
+        <p>한국 환경에 맞춘 프리미엄 밸리보트. 합리적 사양과 견고한 품질을 약속합니다.</p>
+      </div>
+      <div class="footer-col">
+        <h3>CS CENTER</h3>
+        <p>070-4145-5809</p>
+        <p>오전 08:00 ~ 오후 06:00</p>
+        <p>일/공휴일: 전화 예약 후 방문</p>
+      </div>
+      <div class="footer-col">
+        <h3>BANK INFO</h3>
+        <p>예금주 : 더보트(박한성)</p>
+        <p>기업은행 23115723504011</p>
+      </div>
+    </div>
+    <div class="bizbox">
+      <p>상호 : 더보트 · 대표 : 박한성 · 주소 : 인천광역시 남동구 백범로180번길 8 1층</p>
+      <p>사업자번호 : 564-25-00598 · 통신판매업신고 : 제2019-인천남동구-0235호</p>
+      <p>대표번호 : 070-4145-5809 · 이메일 : 00phs@naver.com</p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 더보트. All rights reserved.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+        <a href="#">개인정보처리방침</a><span style="opacity:.4">|</span>
+        <a href="#">이용약관</a><span style="opacity:.4">|</span>
+        <a href="#">쿠키정책</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* 모바일 메뉴 토글 */
+(function(){
+  const t=document.getElementById('navToggle'), n=document.getElementById('mainNav');
+  if(!t||!n) return;
+  t.addEventListener('click', ()=>{ const a=n.classList.toggle('active'); document.body.style.overflow = a ? 'hidden' : ''; });
+  addEventListener('resize', ()=>{ if(innerWidth>991){ n.classList.remove('active'); document.body.style.overflow=''; }});
+})();
+</script>
+</body>
+</html>
