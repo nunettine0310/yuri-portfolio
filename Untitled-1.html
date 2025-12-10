@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POPO 펫 케어 앱</title>
+    <!-- Tailwind CSS CDN 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 1. ⚠️ SUIT 폰트 CDN 링크 삽입 위치 (필수!) ⚠️ -->
+    <!-- 실제 환경에서 SUIT 폰트를 적용하려면, 아래에 폰트 제공자가 제공하는 CDN 링크나 @import 코드를 넣어주세요. -->
+    <!-- 예시: <link href="[Suit 폰트 CDN 주소]" rel="stylesheet"> -->
+
+    <!-- Inter Rounded 폰트 설정 및 디자인 시스템 색상 정의 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'soft-coral': '#FFB7A2',        // Brand Primary
+                        'cream-white': '#FFF9F2',       // 기본 배경
+                        'mocha-brown': '#8B5E3C',       // 주요 타이틀
+                        'warm-pink-tint': '#FFDCD2',    // 카드 배경
+                        'charcoal-brown': '#4A3C32',    // 본문 텍스트
+                        'soft-gray': '#E6E2DD',         // 구분선, 비활성 UI
+                        'health-green': '#7EC47F',      // 건강
+                        'warning-yellow': '#F8D477',    // 주의
+                        'alert-coral': '#FF8A70',       // 이상징후
+                    },
+                    borderRadius: {
+                        'comp': '20px',    // 카드 기본 Radius
+                        'btn': '18px',     // 버튼 기본 Radius
+                        'input': '16px',   // 입력창 기본 Radius
+                        'cell': '12px',    // 캘린더 셀
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 6px rgba(0, 0, 0, 0.08)', // 규칙 4. Soft drop shadow (Y=2, Blur=6, Opacity=8%)
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Suit 폰트 적용 및 자간 +1 적용 */
+        body {
+            font-family: "Suit", "Inter", sans-serif; /* Suit 폰트를 최우선으로 지정 */
+            letter-spacing: 0.05em; /* 자간 +1 근사치 */
+            background-color: #FFF9F2; /* Cream White 배경 */
+        }
+        /* 페이지 전환 애니메이션 */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 버튼 인터랙션 (규칙 7. 눌렀을 때 살짝 튀어나오는 효과) */
+        .popo-btn {
+            transition: all 0.1s ease;
+        }
+        .popo-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+        /* 캘린더 요일 텍스트 색상 */
+        .calendar-day-text {
+            color: #4A3C32; /* Charcoal Brown */
+        }
+        /* 지도 시뮬레이션 스타일 */
+        .map-sim {
+            background-color: #FFF9F2; /* Cream White (단색 배경 유지) */
+            background-image: none;
+            position: relative;
+        }
+        /* 아이콘 색상 기본 설정 */
+        .icon {
+            color: #4A3C32; /* Charcoal Brown */
+        }
+        /* 캘린더 이모지 크기 키우기 위한 스타일 */
+        .calendar-emoji {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1;
+        }
+    </style>
+    <!-- Lucide Icons 및 추가 아이콘 (아이콘은 둥근 형태를 위해 SVG 사용) -->
+    <script>
+        function getIcon(name, classes) {
+            // 네비게이션 아이콘은 크기를 24px에서 28px로 키워 시인성 확보
+            const iconSize = '28'; 
+            
+            const icons = {
+                // 네비게이션 아이콘
+                'home': `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+                'calendar': `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><rect x="3" y="4" width="18" height="18" rx="5"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+                // 1. 발자국 아이콘 수정: SVG를 더 명확하게 (기존 paw-print와 다름)
+                'footprint': `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="M12 21.5C10.5 21.5 8.5 20.5 7 19.5L5 18M12 21.5C13.5 21.5 15.5 20.5 17 19.5L19 18M12 21.5V17M7 19.5C5.5 18.5 4 17 4 15.5V10.5C4 9 5.5 8 7 8C8.5 8 10 9 10 10.5V15.5C10 17 8.5 18.5 7 19.5Z" fill="none"/><path d="M17 19.5C18.5 18.5 20 17 20 15.5V10.5C20 9 18.5 8 17 8C15.5 8 14 9 14 10.5V15.5C14 17 15.5 18.5 17 19.5Z" fill="none"/><path d="M12 17V8M12 8C13.5 8 15 7 15 5.5C15 4 13.5 3 12 3C10.5 3 9 4 9 5.5C9 7 10.5 8 12 8Z" fill="none"/></svg>`,
+                // 2. 구매 아이콘 수정: shopping-bag으로 통일
+                'shopping-bag': `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+                'profile': `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+                // 보조 아이콘
+                'search': `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+                'plus': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+                // 건강 요약 아이콘 (SVG 내부의 fill opacity 조정)
+                'water': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="M12 22s8-4 8-10c0-4.4-3.6-8-8-8s-8 3.6-8 8c0 6 8 10 8 10z"/><path d="M12 21.7c-3.1 0-5.7-2.6-5.7-5.7 0-1.6 1.4-3.1 3.2-4.1 1.8-.9 3.5-1.4 3.5-1.4s1.7.5 3.5 1.4c1.8 1 3.2 2.5 3.2 4.1 0 3.1-2.6 5.7-5.7 5.7z" fill="currentColor" fill-opacity="0.3" stroke="none"/></svg>`, // 물방울
+                'heart': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3.47.63-5.12 2.15C10.97 3.63 9.26 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor" fill-opacity="0.2" stroke="none"/></svg>`, // 심장
+                'paw-print': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classes}"><circle cx="12" cy="18" r="3"/><path d="M5 14s2-1 4-1 4 1 6 1 4-1 4-1"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><path d="M10 21l-3-6 3-3"/><path d="M14 21l3-6-3-3"/></svg>`, // 발바닥
+            };
+            // 네비게이션 아이콘은 크기를 28x28로 설정
+            const defaultClasses = (name.length <= 10 && name !== 'search') ? 'w-7 h-7' : 'w-6 h-6';
+            return icons[name] || '';
+        }
+
+    </script>
+</head>
+<body class="min-h-screen pt-4 pb-20 px-5">
+<div id="app" class="max-w-md mx-auto relative">
+        
+        <!-- 4. 투명 로고 공간 (화면 상단 중앙) -->
+        <div class="absolute top-0 left-0 right-0 h-8 flex justify-center items-center pointer-events-none z-10">
+            <img 
+                src="2dd58213-4301-4aaf-acbf-d9f014991a1f.png" 
+                alt="앱 로고" 
+                class="h-8 w-auto object-contain opacity-100" 
+                onerror="this.onerror=null; this.src='https://placehold.co/120x40/FFB7A2/8B5E3C?text=POPO';"
+            />
+    </div>
+        
+        <!-- ============================================== -->
+        <!-- 1. 홈 화면 [페이지 1] -->
+        <!-- ============================================== -->
+  <div id="home" data-page="home" class="page active pt-10">
+            
+            <!-- 1. 검색창 (라운드 16px, Soft Gray Border) -->
+            <div class="flex items-center p-3 mb-4 bg-cream-white rounded-input border border-soft-gray shadow-soft">
+                <div class="text-soft-coral mr-2" data-icon="search"></div>
+                <input type="text" placeholder="궁금한 건강 정보를 검색해보세요" class="flex-grow bg-transparent text-sm font-medium text-charcoal-brown placeholder-charcoal-brown/50 focus:outline-none">
+            </div>
+
+            <!-- 상단 프로필 카드 (Radius 20px, Shadow 적용) -->
+            <div class="p-4 mb-4 rounded-comp shadow-soft" style="background: linear-gradient(135deg, #FFF9F2 0%, #FFDCD2 100%);">
+                <div class="flex items-center space-x-4">
+                    <!-- 반려동물 아바타: 원형 72px / border 3px 코랄 -->
+                    <div class="w-[72px] h-[72px] rounded-full bg-soft-coral border-3 border-soft-coral flex items-center justify-center overflow-hidden">
+                        <!-- 펫 아바타 시뮬레이션 -->
+                        <img src="img/1.jpg" onerror="this.src='https://placehold.co/72x72/FFB7A2/8B5E3C?text=POPO';" alt="펫 아바타" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <!-- 타이틀 H1: 24px / Bold / Mocha Brown -->
+                        <h1 class="text-2xl font-bold text-mocha-brown mb-1">
+                            안녕하세요, <span class="text-soft-coral">콩떡&nbsp;</span>!
+                        </h1>
+                        <!-- 본문 Body: 14px / Medium / Charcoal Brown -->
+                      <p class="text-sm font-medium text-charcoal-brown">오늘도 건강하게!</p>
+                  </div>
+                </div>
+            </div>
+
+            <!-- 오늘의 할 일 위젯 -->
+            <h2 class="text-lg font-semibold text-mocha-brown mb-3 mt-6">
+                오늘의 할 일
+            </h2>
+            <div class="p-4 bg-warm-pink-tint rounded-comp shadow-soft mb-6 space-y-2">
+                <!-- 약 복용 알림 -->
+                <div class="flex items-center p-2 rounded-btn bg-cream-white shadow-soft">
+                    <span class="text-xl mr-3">💊</span>
+                    <p class="text-sm font-medium text-charcoal-brown">
+                        오후 3시에 관절 영양제 복용 알림
+                    </p>
+                </div>
+                <!-- 산책 추천 알림 -->
+                <div class="flex items-center p-2 rounded-btn bg-cream-white shadow-soft">
+                    <span class="text-xl mr-3">🌤</span>
+                    <p class="text-sm font-medium text-charcoal-brown">
+                        현재 기온 18°C, 산책하기 좋은 날이에요!
+                    </p>
+                </div>
+                <!-- 병원 방문 알림 -->
+                <div class="flex items-center p-2 rounded-btn bg-cream-white shadow-soft">
+                    <span class="text-xl mr-3">📅</span>
+                    <p class="text-sm font-medium text-charcoal-brown">
+                        다음 주 수요일 5차 예방접종 예약 확인
+                    </p>
+                </div>
+            </div>
+
+
+            <h2 class="text-lg font-semibold text-mocha-brown mb-3 mt-6">
+                건강 요약
+            </h2>
+
+            <!-- 오늘 건강요약 카드 -->
+            <div class="w-full h-[140px] p-4 bg-cream-white rounded-comp shadow-soft mb-6 flex justify-around items-center">
+                
+                <!-- 지표 1: 음수량 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-soft-coral/20 flex items-center justify-center mb-1">
+                        <div data-icon="water" class="w-6 h-6 text-soft-coral icon"></div>
+                    </div>
+                    <p class="text-xs font-medium text-charcoal-brown">음수량</p>
+                    <p class="text-sm font-medium text-charcoal-brown mt-1">
+                        320ml / <span class="text-soft-coral">400ml</span>
+                    </p>
+                </div>
+
+                <!-- 지표 2: 활동량 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-alert-coral/20 flex items-center justify-center mb-1">
+                        <div data-icon="heart" class="w-6 h-6 text-alert-coral icon"></div>
+                    </div>
+                    <p class="text-xs font-medium text-charcoal-brown">활동량</p>
+                    <p class="text-sm font-medium text-charcoal-brown mt-1">
+                        <span class="text-alert-coral">주의!</span> 낮음
+                    </p>
+                </div>
+
+                <!-- 지표 3: 산책 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-mocha-brown/20 flex items-center justify-center mb-1">
+                        <div data-icon="paw-print" class="w-6 h-6 text-mocha-brown icon"></div>
+                    </div>
+                    <p class="text-xs font-medium text-charcoal-brown">산책</p>
+                    <p class="text-sm font-medium text-charcoal-brown mt-1">
+                        1회 / 24분
+                    </p>
+                </div>
+            </div>
+
+            <!-- 추천 영양제/용품 -->
+            <h2 class="text-lg font-semibold text-mocha-brown mb-3 mt-6">
+                POPO 추천 용품
+            </h2>
+            <div class="flex space-x-3 overflow-x-auto pb-4">
+                <!-- 추천 카드 1: 관절 케어 -->
+                <div class="flex-shrink-0 w-40 p-3 bg-cream-white rounded-comp shadow-soft">
+                    <div class="h-16 bg-soft-coral/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-2xl">💊</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown leading-tight">
+                        고관절 영양제
+                    </p>
+                    <p class="text-xs font-light text-soft-coral mt-1">
+                        '활동량 주의'에 기반한 추천
+                    </p>
+                </div>
+
+                <!-- 추천 카드 2: 저지방 사료 -->
+                <div class="flex-shrink-0 w-40 p-3 bg-cream-white rounded-comp shadow-soft">
+                    <div class="h-16 bg-soft-coral/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-2xl">🍽️</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown leading-tight">
+                        맞춤 저지방 사료
+                    </p>
+                    <p class="text-xs font-light text-soft-coral mt-1">
+                        '체중 4.5kg'에 기반한 추천
+                    </p>
+                </div>
+                
+                <!-- 추천 카드 3: 물병 -->
+                <div class="flex-shrink-0 w-40 p-3 bg-cream-white rounded-comp shadow-soft">
+                    <div class="h-16 bg-soft-coral/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-2xl">💧</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown leading-tight">
+                        휴대용 물병
+                    </p>
+                    <p class="text-xs font-light text-soft-coral mt-1">
+                        '음수량 부족'에 기반한 추천
+                    </p>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- ============================================== -->
+        <!-- 2. 캘린더 화면 [페이지 2] -->
+        <!-- ============================================== -->
+  <div id="calendar" data-page="calendar" class="page pt-10">
+            <h1 class="text-2xl font-bold text-mocha-brown mb-6 text-center">건강 기록 캘린더</h1>
+
+            <!-- 캘린더 날짜 변경: 2025년 11월 27일 기준 -->
+            <div class="flex justify-between items-center mb-4 text-mocha-brown">
+                <button class="text-2xl popo-btn" onclick="prevMonth()">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-soft-gray/30">&lt;</span>
+                </button>
+                <span class="text-lg font-semibold" id="current-month">2025년 11월</span>
+                <button class="text-2xl popo-btn" onclick="nextMonth()">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-soft-gray/30">&gt;</span>
+                </button>
+            </div>
+
+            <!-- 7x5 달력 그리드 -->
+            <div class="grid grid-cols-7 gap-1.5 text-center mb-6">
+                <!-- 요일 (Charcoal Brown) -->
+                <div class="calendar-day-text text-sm font-medium">일</div>
+                <div class="calendar-day-text text-sm font-medium">월</div>
+                <div class="calendar-day-text text-sm font-medium">화</div>
+                <div class="calendar-day-text text-sm font-medium">수</div>
+                <div class="calendar-day-text text-sm font-medium">목</div>
+                <div class="calendar-day-text text-sm font-medium">금</div>
+                <div class="calendar-day-text text-sm font-medium">토</div>
+                
+                <!-- 11월 날짜 데이터 -->
+                <div class="w-[44px] h-[44px] flex items-center justify-center text-soft-gray/80 text-sm">26</div>
+                <div class="w-[44px] h-[44px] flex items-center justify-center text-soft-gray/80 text-sm">27</div>
+                <div class="w-[44px] h-[44px] flex items-center justify-center text-soft-gray/80 text-sm">28</div>
+                <div class="w-[44px] h-[44px] flex items-center justify-center text-soft-gray/80 text-sm">29</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center bg-soft-coral/20 rounded-cell text-charcoal-brown font-medium text-sm">
+                    1<span class="calendar-emoji mt-0.5">💧</span> <!-- 3. 이모지 크기 확대 (calendar-emoji 적용) -->
+                </div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">2</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">3</div>
+
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">4</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">5</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">6</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">7</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">8</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">9</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">10</div>
+
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">11</div>
+
+              <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">12</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">13</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">14</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">15</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">16</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">17</div>
+
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">18</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">19</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">20</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">21</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">22</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">23</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">24</div>
+
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">25</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">26</div>
+                <!-- 오늘 날짜: 27일 (목) - Coral 2px 원형 stroke -->
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-semibold text-sm border-2 border-soft-coral">
+                    27<span class="calendar-emoji mt-0.5">🐾</span> <!-- 3. 이모지 크기 확대 (calendar-emoji 적용) -->
+                </div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">28</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">29</div>
+                <div class="w-[44px] h-[44px] flex flex-col items-center justify-center rounded-cell text-charcoal-brown font-medium text-sm">30</div>
+                <!-- 다음 달 -->
+                <div class="w-[44px] h-[44px] flex items-center justify-center text-soft-gray/80 text-sm">1</div>
+            </div>
+
+            <!-- 오늘 기록 상세보기 카드 -->
+            <div class="p-4 bg-warm-pink-tint rounded-comp shadow-soft">
+                <h3 class="text-lg font-semibold text-mocha-brown mb-3">오늘 기록 상세 (11월 27일)</h3>
+
+                <div class="space-y-3">
+                    <!-- 음수량 그래프 (라운드 바 시뮬레이션) -->
+                    <div class="p-3 bg-cream-white rounded-comp">
+                        <p class="text-sm font-medium text-charcoal-brown mb-1">음수량: 320ml (80% 달성)</p>
+                        <div class="h-3 w-full bg-soft-gray rounded-full overflow-hidden">
+                            <div class="h-full bg-soft-coral rounded-full" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 배변 상태 -->
+                    <div class="p-3 bg-cream-white rounded-comp flex items-center justify-between">
+                        <p class="text-sm font-medium text-charcoal-brown">배변 상태: 2회 (정상)</p>
+                        <span class="text-2xl">💩</span>
+                    </div>
+
+                    <!-- 메모 입력창 (Radius 16px, Cream 배경) -->
+                    <div class="p-3 bg-cream-white rounded-comp">
+                        <p class="text-sm font-medium text-mocha-brown mb-1">메모 및 사진</p>
+                        <textarea class="w-full h-16 p-2 text-sm text-charcoal-brown bg-cream-white border border-soft-gray rounded-input resize-none focus:outline-none" placeholder="오늘의 특이사항을 기록해보세요."></textarea>
+                        <!-- 사진 첨부 기능 시뮬레이션 -->
+                        <div class="text-soft-coral text-sm mt-1">
+                            + 사진 첨부 기능 (건강 기록 신뢰도 증가)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 3. 발자국 (산책) 기록 화면 [페이지 3] -->
+        <!-- ============================================== -->
+  <div id="walk" data-page="walk" class="page pt-10">
+            <h1 class="text-2xl font-bold text-mocha-brown mb-6 text-center">발자국 기록 (산책)</h1>
+
+            <!-- 상단 요약 카드 (radius 20px) -->
+            <div class="p-4 bg-warm-pink-tint rounded-comp shadow-soft mb-6 flex justify-around text-center">
+                <div>
+                    <p class="text-xs font-medium text-charcoal-brown">오늘 산책</p>
+                    <p class="text-lg font-semibold text-mocha-brown">1.8km</p>
+                </div>
+                <!-- Soft Divider: Soft Gray 사용 -->
+                <div class="w-[1px] bg-soft-gray mx-4"></div> 
+                <div>
+                    <p class="text-xs font-medium text-charcoal-brown">소요 시간</p>
+                    <p class="text-lg font-semibold text-mocha-brown">24min</p>
+                </div>
+            </div>
+
+            <!-- 지도 형식 시뮬레이션 (단색 배경, 이미지 넣을 위치) -->
+            <div class="h-48 map-sim rounded-comp shadow-soft p-4 mb-6 relative overflow-hidden">
+                <p class="absolute top-2 left-4 text-xs font-medium text-mocha-brown">
+                    지도 이미지 삽입 위치 (현재 단색 배경)
+                </p>
+            </div>
+
+            <!-- 하단 기록 리스트 -->
+            <h2 class="text-lg font-semibold text-mocha-brown mb-3">전체 발자국 기록</h2>
+            <div class="space-y-3">
+                <!-- 리스트 아이템 높이: 48px, radius 20px 카드 -->
+                <div class="h-14 p-3 bg-cream-white rounded-comp shadow-soft flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <!-- 아이콘 32px -->
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-soft-coral/20">
+                            <span class="text-xl">🐾</span>
+                        </div>
+                        <!-- 텍스트 14px -->
+                        <p class="text-sm font-medium text-charcoal-brown">
+                            오후 산책 (1.2km / 18분)
+                        </p>
+                    </div>
+                    <span class="text-charcoal-brown/70 text-xs">어제</span>
+                </div>
+                <div class="h-14 p-3 bg-cream-white rounded-comp shadow-soft flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-soft-coral/20">
+                            <span class="text-xl">🐾</span>
+                        </div>
+                        <p class="text-sm font-medium text-charcoal-brown">
+                            아침 짧은 산책 (0.6km / 6분)
+                        </p>
+                    </div>
+                    <span class="text-charcoal-brown/70 text-xs">그제</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 4. 구매 (추천) 화면 [페이지 4] -->
+        <!-- ============================================== -->
+  <div id="shop" data-page="shop" class="page pt-10">
+            <h1 class="text-2xl font-bold text-mocha-brown mb-6 text-center">구매</h1>
+            
+            <!-- 맞춤 용품 추천 섹션 -->
+            <h2 class="text-lg font-semibold text-mocha-brown mb-4">
+                이 아이에게 맞춤 추천 제품이에요
+            </h2>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <!-- 상품 카드 1 -->
+                <div class="h-[230px] bg-cream-white rounded-comp shadow-soft overflow-hidden flex flex-col items-center p-3">
+                    <div class="w-full h-32 bg-soft-coral/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-4xl">💊</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown text-center leading-tight mb-3">
+                        고관절 케어 영양제
+                    </p>
+                    <button class="popo-btn w-full h-10 bg-soft-coral text-white font-semibold text-sm rounded-btn">
+                        구매하기
+                    </button>
+                </div>
+
+                <!-- 상품 카드 2 -->
+                <div class="h-[230px] bg-cream-white rounded-comp shadow-soft overflow-hidden flex flex-col items-center p-3">
+                    <div class="w-full h-32 bg-soft-coral/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-4xl">🍽️</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown text-center leading-tight mb-3">
+                        맞춤형 저지방 사료
+                    </p>
+                    <button class="popo-btn w-full h-10 bg-soft-coral text-white font-semibold text-sm rounded-btn">
+                        구매하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 일반 제품 섹션 추가 -->
+            <h2 class="text-lg font-semibold text-mocha-brown mb-4 mt-8">
+                일반 인기 제품
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                 <!-- 상품 카드 3 -->
+                 <div class="h-[230px] bg-cream-white rounded-comp shadow-soft overflow-hidden flex flex-col items-center p-3">
+                    <div class="w-full h-32 bg-soft-gray/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-4xl">🧼</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown text-center leading-tight mb-3">
+                        천연 강아지 샴푸
+                    </p>
+                    <button class="popo-btn w-full h-10 bg-mocha-brown text-white font-semibold text-sm rounded-btn">
+                        보러가기
+                    </button>
+                </div>
+                <!-- 상품 카드 4 -->
+                <div class="h-[230px] bg-cream-white rounded-comp shadow-soft overflow-hidden flex flex-col items-center p-3">
+                    <div class="w-full h-32 bg-soft-gray/30 rounded-input mb-2 flex items-center justify-center">
+                        <span class="text-4xl">🧸</span>
+                    </div>
+                    <p class="text-sm font-medium text-charcoal-brown text-center leading-tight mb-3">
+                        튼튼한 코담요 장난감
+                    </p>
+                    <button class="popo-btn w-full h-10 bg-mocha-brown text-white font-semibold text-sm rounded-btn">
+                        보러가기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 기부 관련 문구 새로운 섹션으로 강조 -->
+            <div class="p-4 mt-8 rounded-comp bg-soft-coral/20 border-2 border-soft-coral">
+                <p class="text-center text-sm font-medium text-mocha-brown">
+                    <span class="font-bold text-soft-coral">따뜻한 동행:</span> 구매 시 금액의 1/4이 유기동물 보호소에 기부됩니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 5. 반려동물 프로필 화면 [페이지 5] -->
+        <!-- ============================================== -->
+  <div id="profile" data-page="profile" class="page pt-10">
+            <div class="p-6 bg-warm-pink-tint rounded-comp mb-6 flex flex-col items-center shadow-soft">
+                 <!-- 아바타 100px 원형 -->
+                 <div class="w-24 h-24 rounded-full bg-soft-coral border-4 border-soft-coral flex items-center justify-center overflow-hidden mb-3 relative">
+                    <img src="img/1.jpg" onerror="this.src='https://placehold.co/100x100/FFB7A2/8B5E3C?text=POPO';" alt="펫 아바타" class="w-full h-full object-cover">
+                </div>
+                <h1 class="text-xl font-bold text-mocha-brown">콩떡</h1>
+                <p class="text-sm font-medium text-charcoal-brown">포메라니안, 5세, 4.5kg</p>
+            </div>
+
+            <!-- 정보 입력 카드 (radius 20px) -->
+            <div class="p-4 bg-cream-white rounded-comp shadow-soft mb-6">
+                <h2 class="text-lg font-semibold text-mocha-brown mb-3">기본 정보</h2>
+                <div class="space-y-3">
+                    <!-- 입력 필드 시뮬레이션 (radius 16px) -->
+                    <input type="text" value="콩떡" class="w-full p-3 bg-cream-white border border-soft-gray rounded-input text-charcoal-brown focus:border-soft-coral focus:outline-none" placeholder="이름">
+                    <input type="number" value="5" class="w-full p-3 bg-cream-white border border-soft-gray rounded-input text-charcoal-brown focus:border-soft-coral focus:outline-none" placeholder="나이(세)">
+                    <input type="text" value="4.5 kg" class="w-full p-3 bg-cream-white border border-soft-gray rounded-input text-charcoal-brown focus:border-soft-coral focus:outline-none" placeholder="체중">
+                    <input type="text" value="없음" class="w-full p-3 bg-cream-white border border-soft-gray rounded-input text-charcoal-brown focus:border-soft-coral focus:outline-none" placeholder="질병/특이사항">
+                </div>
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <div class="flex space-x-2 overflow-x-auto whitespace-nowrap mb-4">
+                <button class="popo-btn px-4 py-2 bg-soft-coral text-white font-medium rounded-btn text-sm shadow-soft">
+                    건강 기록
+                </button>
+                <button class="popo-btn px-4 py-2 bg-soft-gray/50 text-charcoal-brown font-medium rounded-btn text-sm">
+                    발자국 기록
+                </button>
+                <button class="popo-btn px-4 py-2 bg-soft-gray/50 text-charcoal-brown font-medium rounded-btn text-sm">
+                    영양제/사료
+                </button>
+            </div>
+
+            <button class="popo-btn w-full h-[52px] mt-4 bg-soft-coral text-white font-bold text-lg rounded-btn shadow-soft">
+                정보 저장하기
+            </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 하단 네비게이션 바 (고정) -->
+        <!-- ============================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-cream-white rounded-t-comp shadow-soft border-t border-soft-gray z-20">
+            <div class="flex justify-around items-center h-full">
+                <!-- 네비게이션 텍스트 및 target 변경 -->
+                <button class="nav-btn flex flex-col items-center justify-center popo-btn" data-page-target="home">
+                    <div data-icon="home" class="w-6 h-6"></div>
+                    <span class="text-xs mt-1 text-soft-coral">홈</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center justify-center popo-btn" data-page-target="calendar">
+                    <div data-icon="calendar" class="w-6 h-6"></div>
+                    <span class="text-xs mt-1 text-charcoal-brown">캘린더</span>
+                </button>
+                <!-- 1. 발자국 아이콘이 보이도록 getIcon 함수로 처리 -->
+                <button class="nav-btn flex flex-col items-center justify-center popo-btn" data-page-target="walk">
+                    <div data-icon="footprint" class="w-6 h-6"></div>
+                    <span class="text-xs mt-1 text-charcoal-brown">발자국</span>
+                </button>
+                <!-- 2. 구매 아이콘이 보이도록 getIcon 함수로 처리 -->
+              <button class="nav-btn flex flex-col items-center justify-center popo-btn" data-page-target="shop">
+                    <div data-icon="shopping-bag" class="w-6 h-6"></div>
+                    <span class="text-xs mt-1 text-charcoal-brown">구매</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center justify-center popo-btn" data-page-target="profile">
+                    <div data-icon="profile" class="w-6 h-6"></div>
+                    <span class="text-xs mt-1 text-charcoal-brown">프로필</span>
+                </button>
+            </div>
+        </nav>
+
+    </div>
+
+    <script>
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const pages = document.querySelectorAll('.page');
+        const iconContainers = document.querySelectorAll('[data-icon]');
+
+        // 아이콘 초기화 함수 (2px Round Line 기반, 통통하게)
+        function initializeIcons() {
+            iconContainers.forEach(container => {
+                const iconName = container.getAttribute('data-icon');
+                let colorClass = 'text-charcoal-brown'; 
+                
+                // 홈 아이콘만 초기 활성화 상태로 설정
+                if (iconName === 'home' && document.getElementById('home').classList.contains('active')) {
+                     colorClass = 'text-soft-coral';
+                }
+                
+                if (['water', 'heart', 'paw-print', 'search'].includes(iconName)) {
+                     // 건강 요약 및 검색 아이콘은 기존 스타일 유지 (w-6 h-6)
+                     container.innerHTML = getIcon(iconName, container.classList.value + ' w-6 h-6');
+                } else {
+                    // 네비게이션 아이콘은 크기를 키운 SVG (getIcon 내부에서 w-7 h-7 크기 적용됨)
+                    container.innerHTML = getIcon(iconName, colorClass);
+                }
+            });
+        }
+
+        // 페이지 전환 함수
+        function navigateTo(pageId) {
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                 targetPage.classList.add('active');
+                 updateNav(pageId);
+            } else {
+                 console.error(`Page not found for ID: ${pageId}`);
+            }
+        }
+
+        // 네비게이션 상태 업데이트 (활성화 페이지 Soft Coral)
+function updateNav(activePageId) {
+    navButtons.forEach(button => {
+        const targetId = button.getAttribute('data-page-target');
+        const iconContainer = button.querySelector('[data-icon]');
+        // ⭐ 실제 아이콘 이름은 data-icon 속성에서 다시 읽어옴
+        const iconName = iconContainer.getAttribute('data-icon');
+
+        if (targetId === activePageId) {
+            // 활성화 상태
+            button.querySelector('span').classList.remove('text-charcoal-brown');
+            button.querySelector('span').classList.add('text-soft-coral');
+            iconContainer.innerHTML = getIcon(iconName, 'text-soft-coral');
+        } else {
+            // 비활성화 상태
+            button.querySelector('span').classList.remove('text-soft-coral');
+            button.querySelector('span').classList.add('text-charcoal-brown');
+            iconContainer.innerHTML = getIcon(iconName, 'text-charcoal-brown');
+        }
+    });
+        }
+
+        // 이벤트 리스너 등록
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetPage = button.getAttribute('data-page-target');
+                navigateTo(targetPage);
+            });
+        });
+
+        // 초기 설정
+        window.onload = function() {
+            initializeIcons();
+            navigateTo('home'); // 초기 화면은 Home
+            // 캘린더 월 변경 함수 (더미)
+            window.prevMonth = () => { console.log('Previous Month Clicked'); };
+            window.nextMonth = () => { console.log('Next Month Clicked'); };
+        }
+
+    </script>
+</body>
+</html>
