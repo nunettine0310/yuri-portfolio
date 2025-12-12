@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>더보트 – 프리미엄 밸리보트</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --brand-red:#E60012; --ink-900:#111; --ink-700:#333; --ink-500:#666; --ink-300:#999;
+  --surface:#FAFAF8; --surface-alt:#F3F3F2; --white:#fff;
+  --radius:14px; --shadow-sm:0 6px 20px rgba(0,0,0,.06); --shadow-md:0 10px 30px rgba(0,0,0,.08);
+  --s1:8px; --s2:12px; --s3:16px; --s4:24px; --s5:32px; --s6:48px; --s7:72px; --max:1200px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:"Noto Sans KR",system-ui,Apple SD Gothic Neo,Malgun Gothic,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink-900); background:var(--surface); line-height:1.6}
+h1,h2,h3,h4{margin:0 0 var(--s3); line-height:1.25; letter-spacing:-.02em}
+.serif{font-family:"Playfair Display",serif}
+.container{max-width:var(--max); margin-inline:auto; padding-inline:var(--s4)}
+.section{padding-block:var(--s7)}
+a{text-decoration:none; color:inherit}
+
+/* Splash */
+#splash{
+  position:fixed; inset:0; background:#000; z-index:2000; display:grid; place-items:center;
+  transition:opacity .35s ease; will-change:opacity;
+}
+.splash-inner{display:grid; gap:12px; place-items:center; text-align:center}
+.splash-logo{width:min(46vw,320px); height:auto; display:block; opacity:.96}
+.splash-fallback{color:#fff; font-size:clamp(36px,6vw,56px)}
+.splash-tag{color:var(--brand-red); font-weight:700; letter-spacing:.12em}
+.splash-hidden{opacity:0; pointer-events:none}
+
+/* Header */
+.site-header{position:sticky; top:0; z-index:100; background:rgba(250,250,248,.78); backdrop-filter:saturate(120%) blur(8px); border-bottom:1px solid rgba(0,0,0,.06)}
+.site-header .bar{height:72px; display:flex; align-items:center; justify-content:space-between}
+.logo{font-weight:800; letter-spacing:.08em}
+.nav{display:flex; gap:40px; align-items:center}          /* 간격 더 띄움 */
+.nav a{font-weight:500; padding:8px 4px}                 /* 굵기 살짝 얇게(500) */
+.nav a:hover{color:var(--brand-red)}
+.nav-cta{display:none}
+.toggle{display:none; background:transparent; border:0; width:42px; height:42px; align-items:center; justify-content:center}
+.btn{display:inline-flex; align-items:center; justify-content:center; height:46px; padding:0 22px; border-radius:999px; font-weight:700; border:1px solid transparent; transition:transform .12s, box-shadow .12s, background .12s, color .12s}
+.btn-primary{background:var(--brand-red); color:#fff; box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:var(--shadow-md)}
+.btn-outline{background:transparent; border-color:var(--brand-red); color:var(--brand-red)}
+.btn-outline:hover{background:rgba(230,0,18,.08)}
+.btn-nav-wide{min-width:200px; padding:0 32px}          /* 예약 버튼 가로 더 넓게 */
+
+@media (max-width:991px){
+  .nav{position:fixed; inset:72px 0 auto 0; background:rgba(250,250,248,.98); flex-direction:column; gap:16px; padding:24px; transform:translateY(-8px); opacity:0; pointer-events:none; transition:opacity .2s ease}
+  .nav.active{opacity:1; pointer-events:auto}
+  .toggle{display:inline-flex}
+  .nav-cta{display:inline-flex}
+}
+
+/* Masthead */
+.masthead{
+  position:relative;
+  height:80vh;           /* min-height 대신 height로 고정 */
+  overflow:hidden;
+  background:#000;
+}
+
+.masthead img{
+  position:absolute;     /* 화면을 꽉 채우게 */
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;      /* 비율 유지하면서 꽉 채우기 */
+  display:block;
+}
+/* Hero */
+.hero{position:relative; min-height:56vh; display:flex; align-items:center; color:#fff; overflow:hidden}
+.hero .media{position:absolute; inset:0; z-index:-1}
+.hero .media img{width:100%; height:100%; object-fit:cover; filter:none}
+.hero::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.15))} /* 더 옅게 */
+.hero .inner{width:100%}
+.hero .kicker{color:#F0F0F0; letter-spacing:.18em; text-transform:uppercase; margin-bottom:var(--s2); font-size:12px}
+.hero h1{font-size:clamp(40px,5vw,64px)}
+.hero .actions{display:flex; gap:var(--s3); margin-top:var(--s4)}
+@media (max-width:768px){ .hero{min-height:50vh} }
+
+/* Events */
+.event-cards{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.event-card{grid-column:span 6; background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm)}
+.event-card .thumb{aspect-ratio:16/9; background:#f2f2f2; display:block}
+.event-card .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.event-card .body{padding:24px}
+.event-meta{color:var(--ink-500); font-size:14px; margin-bottom:12px}
+.event-card.full{grid-column:span 12}
+@media (max-width:1200px){ .event-card{grid-column:span 12} }
+
+/* Products */
+.product-header{text-align:center; margin-bottom:24px}
+.panel-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.product-card{grid-column:span 6; background:#fff; border-radius:var(--radius); border:1px solid rgba(0,0,0,.06); box-shadow:var(--shadow-sm); overflow:hidden; transition:transform .12s, box-shadow .12s}
+.product-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-md)}
+.product-card__image{aspect-ratio:4/3; background:#ddd}
+.product-card__image img{width:100%; height:100%; object-fit:cover}
+.product-card__content{padding:24px; display:grid; gap:10px}
+.product-card__label{color:var(--brand-red); font-weight:800; letter-spacing:.12em; font-size:12px}
+.price-row{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.price-now{font-weight:800; font-size:18px; color:#111}
+.price-old{color:#999; text-decoration:line-through}
+.badge-sale{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; color:#fff; background:var(--brand-red)}
+@media (max-width:1200px){ .product-card{grid-column:span 12} }
+
+/* Recommendations */
+.reco-list{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; max-width:1000px; margin:24px auto 0}
+.reco-item{display:grid; grid-template-columns:96px 1fr auto; gap:12px; align-items:center; border:1px solid rgba(0,0,0,.06); border-radius:12px; background:#fff; padding:12px 16px}
+.reco-thumb{width:96px; height:72px; background:#eee; border-radius:8px; overflow:hidden}
+.reco-thumb img{width:100%; height:100%; object-fit:cover}
+.reco-name{font-weight:700}
+.reco-price{font-weight:800}
+.badge-soldout{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; color:var(--brand-red); background:rgba(230,0,18,.1); border:1px solid rgba(230,0,18,.35)}
+.is-soldout .reco-price{color:#999}
+.is-soldout .reco-name{color:#999}
+@media (max-width:768px){ .reco-list{grid-template-columns:1fr} .reco-item{grid-template-columns:80px 1fr auto} .reco-thumb{width:80px;height:60px} }
+
+/* Gallery */
+.gallery-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.gallery-card{grid-column:span 6; border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid rgba(0,0,0,.06); background:#fff}
+.gallery-card img{width:100%; height:100%; object-fit:cover; display:block}
+.gallery-card .body{padding:16px}
+@media (max-width:1200px){ .gallery-card{grid-column:span 12} }
+
+/* Footer */
+.site-footer{background:#111; color:#bbb; padding-block:var(--s6)}
+.site-footer a{color:#ddd}
+.site-footer a:hover{color:var(--brand-red)}
+.footer-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.footer-col{grid-column:span 4; font-size:14px; line-height:1.7}  /* ← 폰트 작게 */
+.footer-col h3{color:#fff; margin-bottom:8px; font-size:16px}
+@media (max-width:1200px){ .footer-col{grid-column:span 12} }
+
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08); margin-top:24px; padding-top:16px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+
+/* 사업자 정보 박스 */
+.bizbox{
+  margin-top:24px; padding:16px; border:1px solid rgba(255,255,255,.08); border-radius:12px;
+  text-align:center; color:#9a9a9a; font-size:13px; background:rgba(255,255,255,.02)
+}
+.bizbox p{margin:4px 0}
+	
+/* 헤더 네비의 빨간 CTA가 다른 규칙에 가려질 때 강제 복구 */
+.nav .btn.btn-primary,
+.nav .btn.btn-primary span {
+  color: #fff !important;         /* 흰색 텍스트 고정 */
+  text-indent: 0 !important;      /* 혹시 숨김 처리 대비 */
+  font-size: 16px;                 /* 보장된 가독 크기 */
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 링크 기본 규칙이 버튼까지 덮어쓰지 않도록 가드 */
+.nav a.btn.btn-primary { 
+  color: #fff !important; 
+}
+
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash" aria-hidden="true">
+  <div class="splash-inner">
+    <img class="splash-logo" src="logo-white.png" alt="더보트 로고" onerror="this.style.display='none'">
+    <img class="splash-logo" src="logo-red.png" alt="더보트 로고(레드)" onerror="this.style.display='none'">
+    <div class="splash-fallback serif">THE BOAT</div>
+    <div class="splash-tag">PREMIUM VALLEY BOAT</div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="bar container">
+    <a href="index.html" class="logo serif">THE BOAT</a>
+
+    <nav id="mainNav" class="nav" aria-label="주 메뉴">
+      <a href="index.html">홈</a>
+      <a href="product.html">제품</a>
+      <a href="events.html">이벤트</a>
+      <a href="gallery.html">갤러리</a>
+      <a href="contact.html">문의</a>
+      <a href="mypage.html">마이페이지</a>
+      <a class="btn btn-primary btn-nav-wide nav-cta" href="booking.html">체험/상담 예약</a>
+    </nav>
+
+    <button id="navToggle" class="toggle" aria-label="메뉴 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+
+<!-- Masthead -->
+<section id="masthead" class="masthead" aria-label="메인 이미지">
+  <img src="img/더보트 간판 이미지 2.jpg"
+       alt="더보트 메인 비주얼" fetchpriority="high" decoding="async" />
+</section>
+
+<!-- Hero -->
+<section id="hero-section" class="hero">
+  <div class="media" aria-hidden="true">
+    <img src="img/더보트 간판 이미지.jpg"
+         alt="" fetchpriority="high" decoding="async" />
+  </div>
+  <div class="container inner">
+    <span class="kicker">PREMIUM</span>
+    <h1 class="serif">더보트</h1>
+    <p>국내 환경에 최적화된 안전 설계와 튼튼한 내구성, 편리한 운용성을 갖춘 프리미엄 밸리보트를 제공합니다.</p>
+    <p>검증된 제작 공정과 품질 기준, 실사용자의 피드백을 반영한 실용적 구성으로 믿고 탈 수 있는 보트를 만듭니다.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#cta-booking">체험/상담 예약</a>
+      <a class="btn btn-outline" href="#product-preview-section">베스트 상품 보기</a>
+    </div>
+  </div>
+</section>
+
+<!-- 이벤트 -->
+<section id="events-section" class="section">
+  <div class="container">
+    <h2 class="section-title serif">이벤트</h2>
+    <p class="section-subtitle">2025년 마지막 시즌 이벤트, 웨이포인트(좌표) 입력 이벤트</p>
+
+    <div class="event-cards">
+      <!-- 2025 마지막 시즌 이벤트 -->
+      <article class="event-card">
+        <a class="thumb" href="events.html">
+          <img src="img/2025 마지막 시즌 이벤트 배너 (이미지 교체).jpg" alt="2025 마지막 시즌 이벤트 배너" loading="lazy" decoding="async">
+        </a>
+        <div class="body">
+          <h3 class="serif">2025년 마지막 시즌 이벤트</h3>
+          <p class="event-meta">EBS ‘한국기행’ “왔다! 주꾸미” 방영 기념 · 블랙프라이데이 특별가</p>
+          <ul>
+            <li>올뉴에스 : <span class="price-old">1,650,000원</span> → <strong class="price-now">1,550,000원</strong> <span class="badge-sale">-100,000</span></li>
+            <li>더보트 심플 : <span class="price-old">1,852,000원</span> → <strong class="price-now">1,702,000원</strong> <span class="badge-sale">-150,000</span></li>
+            <li>올뉴페달밸리 : <span class="price-old">2,199,000원</span> → <strong class="price-now">2,049,000원</strong> <span class="badge-sale">-150,000</span></li>
+          </ul>
+          <p style="margin-top:8px; color:#666">* 중복할인 제외 · 할인구매 문의 <strong>010-3307-5809</strong></p>
+        </div>
+      </article>
+
+      <!-- 웨이포인트(좌표) 입력 이벤트 -->
+      <article class="event-card">
+        <a class="thumb" href="events.html">
+          <img src="img/웨이포인트(좌표) 입력 이벤트 배너 (이미지 교체).jpg" alt="웨이포인트(좌표) 입력 이벤트" loading="lazy" decoding="async">
+        </a>
+        <div class="body">
+          <h3 class="serif">웨이포인트(좌표) 입력 이벤트</h3>
+          <ul>
+            <li>좌표수 : 총 1,336개 (어초좌표 X, 피쉬랜딩좌표 O)</li>
+            <li>2016~2023년 태안·보령권 밸리보트 포인트, 바이트 직후 랜딩 마킹 ‘빈바늘’ 좌표</li>
+            <li>랜딩 어종 : 광어, 농어, 우럭, 삼치, 놀래미, 백조기, 주꾸미, 갑오징어, 배스(일부)</li>
+            <li>대상 : <strong>더보트 앨리먼트 어탐</strong> 구입 고객</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- 유튜브 카드(텍스트/버튼 확실히 노출 + 전체 클릭 가능) -->
+      <article class="event-card full">
+        <a class="thumb" href="https://www.youtube.com/@story221" target="_blank" rel="noopener">
+          <img src="img/더보트 유튜브 이미지.jpg"
+               alt="‘더보트 밸리보트 story’ 유튜브 채널" loading="lazy" decoding="async">
+        </a>
+        <div class="body">
+          <h3 class="serif">
+            <a href="https://www.youtube.com/@story221" target="_blank" rel="noopener" style="color:inherit">‘더보트 밸리보트 story’ 유튜브</a>
+          </h3>
+          <p>제품, 조립방법, 런칭, 랜딩, 운용, 모임 등 다양한 동영상</p>
+          <p style="margin-top:8px">
+            <a class="btn btn-outline" href="https://www.youtube.com/@story221" target="_blank" rel="noopener">채널 바로가기</a>
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 베스트 상품 -->
+<section id="product-preview-section" class="section">
+  <div class="container">
+    <div class="product-header">
+      <h2 class="section-title serif">베스트 상품</h2>
+      <p class="section-subtitle">가장 많이 선택되는 더보트의 주력 라인업</p>
+    </div>
+
+    <div class="panel-grid">
+      <article class="product-card">
+        <div class="product-card__image">
+          <img src="img/올뉴에스.png" alt="올 뉴에스 초콜릿 색상" loading="lazy" decoding="async" />
+        </div>
+        <div class="product-card__content">
+          <span class="product-card__label">베스트 상품</span>
+          <h3>올 뉴에스 (ALL NEW S) — 색상: 초콜릿</h3>
+          <p>안정적인 주행과 넉넉한 적재, 잦은 출조에 적합한 고내구 설계.</p>
+          <div class="price-row">
+            <span class="price-old">1,650,000원</span>
+            <span class="price-now">1,550,000원</span>
+            <span class="badge-sale">SALE</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__image">
+          <img src="img/올뉴에스토너먼트.png" alt="올 뉴에스 토너먼트 초콜릿" loading="lazy" decoding="async" />
+        </div>
+        <div class="product-card__content">
+          <span class="product-card__label">베스트 상품</span>
+          <h3>올 뉴에스 토너먼트 (ALL NEW S TOURNAMENT) — 색상: 초콜릿</h3>
+          <p>경량·강성의 밸런스를 높여 토너먼트 환경에 맞춘 사양.</p>
+          <div class="price-row">
+            <span class="price-now">2,296,000원</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__image">
+          <img src="img/올뉴플러스나인.png" alt="올 뉴 플러스 나인 심플 초콜릿" loading="lazy" decoding="async" />
+        </div>
+        <div class="product-card__content">
+          <span class="product-card__label">베스트 상품</span>
+          <h3>올 뉴 플러스 나인 심플 (ALL NEW Plus9 Simple) — 색상: 초콜릿</h3>
+          <p>모듈식 액세서리로 손쉬운 확장, 합리적 구성의 레저형.</p>
+          <div class="price-row">
+            <span class="price-now">2,265,000원</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__image">
+          <img src="img/더보트심플.png" alt="더보트 심플 초콜릿" loading="lazy" decoding="async" />
+        </div>
+        <div class="product-card__content">
+          <span class="product-card__label">베스트 상품</span>
+          <h3>더보트 심플 (The boat Simple) — 색상: 초콜릿</h3>
+          <p>가볍게 즐기는 입문형. 간결한 구성과 뛰어난 보관 편의성.</p>
+          <div class="price-row">
+            <span class="price-old">1,852,000원</span>
+            <span class="price-now">1,702,000원</span>
+            <span class="badge-sale">SALE</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 추천상품 -->
+<section id="recommendations-section" class="section" style="background:var(--surface-alt)">
+  <div class="container">
+    <h2 class="section-title serif">추천상품</h2>
+    <div class="reco-list">
+      <div class="reco-item">
+        <div class="reco-thumb"><img src="img/랜딩바퀴.png" alt="올뉴플러스나인 신형 랜딩바퀴"></div>
+        <div class="reco-name">올뉴플러스나인 신형 랜딩바퀴</div>
+        <div class="reco-price">270,000원</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-thumb"><img src="img/홀더.png" alt="1구 로드홀더(거치형)"></div>
+        <div class="reco-name">1구 로드홀더(거치형)</div>
+        <div class="reco-price">42,000원</div>
+      </div>
+      <div class="reco-item is-soldout">
+        <div class="reco-thumb"><img src="img/쭈꾸미살림망.png" alt="쭈꾸미 살림망 (피쉬테이블 대형용)"></div>
+        <div class="reco-name">쭈꾸미 살림망 (피쉬테이블 대형용) <span class="badge-soldout">SOLD OUT</span></div>
+        <div class="reco-price">32,000원</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-thumb"><img src="img/안전끈.png" alt="바디리쉬 Body Leash (안전끈)"></div>
+        <div class="reco-name">바디리쉬 Body Leash (안전끈)</div>
+        <div class="reco-price">39,000원</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 갤러리 -->
+<section id="gallery-section" class="section">
+  <div class="container">
+    <h2 class="section-title serif">갤러리</h2>
+    <p class="section-subtitle">현장 주행, 인수 장면, 제조 디테일을 담은 이미지 모음</p>
+    <div class="gallery-grid">
+      <article class="gallery-card">
+        <img src="img/현장사진1.jpg" alt="준비" loading="lazy" decoding="async" />
+        <div class="body"><strong>준비</strong><p>출조 하려고 준비하는 사진</p></div>
+      </article>
+      <article class="gallery-card">
+        <img src="img/현장사진2.jpg" alt="바다위에서" loading="lazy" decoding="async" />
+        <div class="body"><strong>바다위에서</strong><p>출조 한 사진</p></div>
+      </article>
+      <article class="gallery-card">
+        <img src="img/현장사진3.jpg" alt="낚시" loading="lazy" decoding="async" />
+        <div class="body"><strong>낚시</strong><p>주꾸미 낚은 사진</p></div>
+      </article>
+	  <article class="gallery-card">
+        <img src="img/현장사진4.jpg" alt="단체사진" loading="lazy" decoding="async" />
+        <div class="body"><strong>단체사진</strong><p>주꾸미데이때 단체사진</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 예약 CTA -->
+<section id="cta-booking" class="section" style="padding-block:56px">
+  <div class="container" style="display:grid; gap:12px; justify-items:center; text-align:center">
+    <h2 class="section-title serif" style="margin-bottom:0">체험/상담 예약</h2>
+    <p style="max-width:720px; color:#444">더보트의 실제 주행감과 조작성, 적재·안정성을 현장에서 직접 확인해 보세요. 일정과 장소는 상담 후 맞춤 진행됩니다. (영업일 기준 1일 내 연락)</p>
+    <a class="btn btn-primary btn-nav-wide" href="booking.html">예약 페이지로 이동</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="footer" class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 class="serif">더보트</h3>
+        <p>더보트는 안전성과 신뢰를 최우선으로, 한국의 사용 환경에 맞춘 프리미엄 밸리보트를 설계·제작합니다. 합리적인 사양과 견고한 품질로 오래 탈수록 만족이 커집니다.</p>
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+          <span style="background:#222; color:#ddd; padding:4px 10px; border-radius:999px; font-size:12px">디자인등록</span>
+          <span style="background:#222; color:#ddd; padding:4px 10px; border-radius:999px; font-size:12px">실용신안</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h3>CS CENTER</h3>
+        <p>070-4145-5809</p>
+        <p>운영시간: 오전 08:00 ~ 오후 06:00</p>
+        <p>일/공휴일: 전화 예약 후 방문 가능</p>
+      </div>
+
+      <div class="footer-col">
+        <h3>BANK INFO</h3>
+        <p>예금주 : 더보트(박한성)</p>
+        <p>기업은행 23115723504011</p>
+      </div>
+    </div>
+
+    <div class="bizbox">
+      <p>상호 : 더보트 &nbsp;&nbsp;대표 : 박한성 &nbsp;|&nbsp; 주소 : 인천광역시 남동구 백범로180번길 8 1층</p>
+      <p>사업자번호 : 564-25-00598 &nbsp;|&nbsp; 통신판매업신고 : 제2019-인천남동구-0235호</p>
+      <p>대표번호 : 070-4145-5809 &nbsp;|&nbsp; 이메일 : 00phs@naver.com</p>
+    </div>
+
+    <div class="footer-bottom">
+      <p style="font-size:13px">© 2025 더보트. All rights reserved.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px">
+        <a href="#">개인정보처리방침</a><span style="opacity:.4">|</span>
+        <a href="#">이용약관</a><span style="opacity:.4">|</span>
+        <a href="#">쿠키정책</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* 모바일 메뉴 */
+(function(){
+  const toggle=document.getElementById('navToggle');
+  const nav=document.getElementById('mainNav');
+  if(!toggle||!nav) return;
+  toggle.addEventListener('click', ()=>{
+    const active=nav.classList.toggle('active');
+    document.body.style.overflow = active ? 'hidden' : '';
+  });
+  window.addEventListener('resize', ()=>{ if(innerWidth>991){ nav.classList.remove('active'); document.body.style.overflow=''; }});
+})();
+
+/* 스플래시: 1.2초 후 자동 제거 + 스크롤/클릭 시 제거 + display:none */
+(function(){
+  const splash=document.getElementById('splash');
+  if(!splash) return;
+  const hide=()=>{
+    if(!splash.classList.contains('splash-hidden')){
+      splash.classList.add('splash-hidden');
+      setTimeout(()=>{ splash.style.display='none'; }, 380);   // 완전히 없애 클릭 차단 방지
+    }
+  };
+  setTimeout(hide, 1200);
+  ['scroll','click','keydown','wheel','touchstart'].forEach(ev=>document.addEventListener(ev, hide, {once:true, passive:true}));
+})();
+</script>
+</body>
+</html>

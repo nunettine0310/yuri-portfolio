@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>체험/상담 예약 | 더보트 – 프리미엄 밸리보트</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --brand-red:#E60012; --ink-900:#111; --ink-700:#333; --ink-500:#666; --ink-300:#999;
+  --surface:#FAFAF8; --surface-alt:#F3F3F2; --white:#fff;
+  --radius:14px; --shadow-sm:0 6px 20px rgba(0,0,0,.06); --shadow-md:0 10px 30px rgba(0,0,0,.08);
+  --s2:12px; --s3:16px; --s4:24px; --s5:32px; --s6:48px; --max:1200px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:"Noto Sans KR",system-ui,Apple SD Gothic Neo,Malgun Gothic,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink-900); background:var(--surface); line-height:1.6}
+a{text-decoration:none; color:inherit}
+h1,h2,h3{margin:0 0 var(--s3); line-height:1.25; letter-spacing:-.02em}
+.serif{font-family:"Playfair Display",serif}
+.container{max-width:var(--max); margin-inline:auto; padding-inline:var(--s4)}
+.section{padding-block:var(--s6)}
+
+/* Header (통일) */
+.site-header{position:sticky; top:0; z-index:100; background:rgba(250,250,248,.78); backdrop-filter:saturate(120%) blur(8px); border-bottom:1px solid rgba(0,0,0,.06)}
+.site-header .bar{height:72px; display:flex; align-items:center; justify-content:space-between}
+.logo{font-weight:800; letter-spacing:.08em}
+.nav{display:flex; gap:40px; align-items:center}
+.nav a{font-weight:500; padding:8px 4px}
+.nav a:hover{color:var(--brand-red)}
+.nav a.is-active{color:var(--brand-red); font-weight:700}
+.btn{display:inline-flex; align-items:center; justify-content:center; height:46px; padding:0 22px; border-radius:999px; font-weight:700; border:1px solid transparent; transition:.12s transform, .12s box-shadow}
+.btn-primary{background:var(--brand-red); color:#fff; box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:var(--shadow-md)}
+.btn-outline{background:transparent; border-color:var(--brand-red); color:var(--brand-red)}
+.btn-nav-wide{min-width:200px; padding:0 32px}
+.toggle{display:none; background:transparent; border:0; width:42px; height:42px; align-items:center; justify-content:center}
+@media (max-width:991px){
+  .nav{position:fixed; inset:72px 0 auto 0; background:rgba(250,250,248,.98); flex-direction:column; gap:16px; padding:24px; opacity:0; pointer-events:none; transition:opacity .2s}
+  .nav.active{opacity:1; pointer-events:auto}
+  .toggle{display:inline-flex}
+}
+
+/* Hero */
+.page-hero{background:var(--surface-alt); border-bottom:1px solid rgba(0,0,0,.06)}
+.page-hero .wrap{padding-block:var(--s6)}
+.page-hero h1{font-size:clamp(32px,4vw,48px)}
+.page-hero p{color:var(--ink-500)}
+
+/* Layout */
+.grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.col-6{grid-column:span 6}
+.col-12{grid-column:span 12}
+@media (max-width:991px){ .col-6{grid-column:span 12} }
+
+/* Card */
+.card{background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:var(--radius); box-shadow:var(--shadow-sm)}
+
+/* Calendar */
+.calendar{padding:20px}
+.cal-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+.cal-header h3{font-size:18px}
+.cal-nav{display:flex; gap:8px}
+.cal-nav button{width:36px; height:36px; border-radius:8px; border:1px solid rgba(0,0,0,.08); background:#fff; cursor:pointer}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
+.cal-cell{aspect-ratio:1/1; display:grid; place-items:center; border-radius:10px; font-weight:700; cursor:pointer; user-select:none; border:1px solid rgba(0,0,0,.06); background:#fff}
+.cal-head{font-weight:700; color:var(--ink-500); border:none; background:transparent; cursor:default}
+.cal-cell:hover{box-shadow:var(--shadow-sm)}
+.cal-cell.is-today{outline:2px solid rgba(230,0,18,.25)}
+.cal-cell.is-muted{color:#bbb; background:#f5f5f5; cursor:not-allowed; border-style:dashed}
+.cal-cell.is-selected{background:var(--brand-red); color:#fff; border-color:transparent; box-shadow:var(--shadow-md)}
+
+/* Form */
+.form{padding:20px; display:grid; gap:16px}
+.field{display:grid; gap:6px}
+label{font-weight:700}
+input,select,textarea{width:100%; border:1px solid rgba(0,0,0,.12); border-radius:10px; padding:12px 14px; font-size:16px; background:#fff}
+textarea{min-height:120px; resize:vertical}
+.hint{color:var(--ink-500); font-size:13px}
+.inline{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.divider{height:1px; background:rgba(0,0,0,.06); margin:4px 0}
+
+/* Footer (통일, 간략) */
+.site-footer{background:#111; color:#bbb; padding-block:var(--s6); margin-top:var(--s6)}
+.footer-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:24px}
+.footer-col{grid-column:span 4; font-size:14px; line-height:1.7}
+.footer-col h3{color:#fff; margin-bottom:8px; font-size:16px}
+.bizbox{margin-top:24px; padding:16px; border:1px solid rgba(255,255,255,.08); border-radius:12px; text-align:center; color:#9a9a9a; font-size:13px; background:rgba(255,255,255,.02)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08); margin-top:24px; padding-top:16px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:13px}
+@media (max-width:1200px){ .footer-col{grid-column:span 12} }
+	
+/* 개인정보 수집 동의 체크박스 위치 보정 */
+#agree {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 8px;	
+  accent-color: var(--brand-red);
+}
+label[for="agree"] {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+	
+/* 달력 상단 '오늘' 버튼 보정 */
+.cal-today,
+button[aria-label="오늘로 이동"],
+button[aria-label="오늘"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 70px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1; /* 세로 중앙정렬 방지 */
+  white-space: nowrap; /* ‘오 늘’ 강제 줄바꿈 방지 */
+}
+
+
+/* 헤더 네비의 빨간 CTA가 다른 규칙에 가려질 때 강제 복구 */
+.nav .btn.btn-primary,
+.nav .btn.btn-primary span {
+  color: #fff !important;         /* 흰색 텍스트 고정 */
+  text-indent: 0 !important;      /* 혹시 숨김 처리 대비 */
+  font-size: 16px;                 /* 보장된 가독 크기 */
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 링크 기본 규칙이 버튼까지 덮어쓰지 않도록 가드 */
+.nav a.btn.btn-primary { 
+  color: #fff !important; 
+}
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="bar container">
+    <a href="index.html" class="logo serif">THE BOAT</a>
+
+    <nav id="mainNav" class="nav" aria-label="주 메뉴">
+      <a href="index.html">홈</a>
+      <a href="product.html">제품</a>
+      <a href="events.html">이벤트</a>
+      <a href="gallery.html">갤러리</a>
+      <a href="contact.html">문의</a>
+      <a href="mypage.html">마이페이지</a>
+      <a class="btn btn-primary btn-nav-wide nav-cta" href="booking.html">체험/상담 예약</a>
+    </nav>
+
+    <button id="navToggle" class="toggle" aria-label="메뉴 열기/닫기">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container wrap">
+    <h1 class="serif">체험/상담 예약</h1>
+    <p>원하시는 날짜를 달력에서 선택하고 연락처를 남겨주세요. 영업일 기준 1일 내 확인 연락을 드립니다.</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+    <div class="grid">
+      <!-- Calendar -->
+      <div class="col-6">
+        <div class="card calendar" aria-label="달력">
+          <div class="cal-header">
+            <button class="cal-back" aria-label="이전 달">&larr;</button>
+            <h3 id="calTitle" class="serif">2025년 1월</h3>
+            <div class="cal-nav">
+              <button class="cal-today" aria-label="오늘로 이동">오늘</button>
+              <button class="cal-next" aria-label="다음 달">&rarr;</button>
+            </div>
+          </div>
+          <div class="cal-grid" role="grid" aria-labelledby="calTitle">
+            <!-- 요일 헤더 -->
+            <div class="cal-cell cal-head">일</div>
+            <div class="cal-cell cal-head">월</div>
+            <div class="cal-cell cal-head">화</div>
+            <div class="cal-cell cal-head">수</div>
+            <div class="cal-cell cal-head">목</div>
+            <div class="cal-cell cal-head">금</div>
+            <div class="cal-cell cal-head">토</div>
+            <!-- 날짜 셀은 JS가 렌더링 -->
+          </div>
+          <div class="divider"></div>
+          <p class="hint" id="selectedText">선택된 날짜가 없습니다.</p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="col-6">
+        <div class="card form">
+          <form id="bookingForm" action="mailto:00phs@naver.com" method="post" enctype="text/plain">
+            <div class="field">
+              <label for="selectedDate">예약 날짜</label>
+              <input type="text" id="selectedDate" name="예약 날짜" placeholder="달력에서 날짜를 선택하세요" readonly required>
+            </div>
+            <div class="field">
+              <label for="name">이름</label>
+              <input type="text" id="name" name="이름" placeholder="홍길동" required>
+            </div>
+            <div class="field">
+              <label for="phone">연락처</label>
+              <input type="tel" id="phone" name="연락처" inputmode="tel" placeholder="010-0000-0000" required>
+            </div>
+            <div class="field">
+              <label for="product">관심 제품</label>
+              <select id="product" name="관심 제품" required>
+                <option value="" disabled selected>선택하세요</option>
+                <option>올 뉴에스 (ALL NEW S)</option>
+                <option>올 뉴에스 토너먼트</option>
+                <option>올 뉴 플러스 나인 심플</option>
+                <option>더보트 심플</option>
+                <option>올 뉴 페달밸리</option>
+                <option>기타/상담</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="time">희망 시간대</label>
+              <select id="time" name="희망 시간대">
+                <option value="" disabled selected>선택하세요</option>
+                <option>오전 (09:00 ~ 12:00)</option>
+                <option>오후 (13:00 ~ 17:00)</option>
+                <option>시간 협의</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="message">메모 (선택)</label>
+              <textarea id="message" name="메모" placeholder="희망 장소, 인원, 기타 요청 사항 등을 적어주세요."></textarea>
+            </div>
+            <div class="inline">
+              <input type="checkbox" id="agree" required>
+              <label for="agree">개인정보 수집·이용에 동의합니다. (예약 안내 목적)</label>
+            </div>
+            <div class="inline">
+              <button type="submit" class="btn btn-primary">예약 요청 보내기</button>
+              <button type="reset" class="btn btn-outline">입력 초기화</button>
+            </div>
+            <p class="hint">* 메일 클라이언트가 열리지 않는 환경이면, action을 구글폼/서버로 변경해 연결할 수 있습니다.</p>
+          </form>
+        </div>
+      </div>
+
+      <!-- 안내 -->
+      <div class="col-12">
+        <div class="card" style="padding:20px">
+          <h3 class="serif" style="margin:0 0 8px">예약 안내</h3>
+          <ul style="margin:0; padding-left:18px; color:var(--ink-700)">
+            <li>영업일 기준 1일 내 담당자가 연락드려 일정/장소를 확정합니다.</li>
+            <li>기상 상황에 따라 일정이 조정될 수 있습니다.</li>
+            <li>안전 장비(구명조끼 등)는 현장에서 제공되며, 기본 안전 교육 후 진행됩니다.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 class="serif">더보트</h3>
+        <p>한국 환경에 맞춘 프리미엄 밸리보트. 합리적 사양과 견고한 품질을 약속합니다.</p>
+      </div>
+      <div class="footer-col">
+        <h3>CS CENTER</h3>
+        <p>070-4145-5809</p>
+        <p>오전 08:00 ~ 오후 06:00</p>
+        <p>일/공휴일: 전화 예약 후 방문</p>
+      </div>
+      <div class="footer-col">
+        <h3>BANK INFO</h3>
+        <p>예금주 : 더보트(박한성)</p>
+        <p>기업은행 23115723504011</p>
+      </div>
+    </div>
+
+    <div class="bizbox">
+      <p>상호 : 더보트 · 대표 : 박한성 · 주소 : 인천광역시 남동구 백범로180번길 8 1층</p>
+      <p>사업자번호 : 564-25-00598 · 통신판매업신고 : 제2019-인천남동구-0235호</p>
+      <p>대표번호 : 070-4145-5809 · 이메일 : 00phs@naver.com</p>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 더보트. All rights reserved.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+        <a href="#">개인정보처리방침</a><span style="opacity:.4">|</span>
+        <a href="#">이용약관</a><span style="opacity:.4">|</span>
+        <a href="#">쿠키정책</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* 모바일 메뉴 토글 (공통) */
+(function(){
+  const t=document.getElementById('navToggle'), n=document.getElementById('mainNav');
+  if(!t||!n) return;
+  t.addEventListener('click', ()=>{const a=n.classList.toggle('active'); document.body.style.overflow=a?'hidden':'';});
+  addEventListener('resize', ()=>{if(innerWidth>991){n.classList.remove('active'); document.body.style.overflow='';}});
+})();
+
+/* Calendar 렌더 */
+(function(){
+  const calTitle=document.getElementById('calTitle');
+  const grid=document.querySelector('.cal-grid');
+  const selectedText=document.getElementById('selectedText');
+  const selectedInput=document.getElementById('selectedDate');
+  const btnPrev=document.querySelector('.cal-back');
+  const btnNext=document.querySelector('.cal-next');
+  const btnToday=document.querySelector('.cal-today');
+
+  let viewDate=new Date(); // 현재 보이는 달
+  let selected=null;       // 선택된 날짜 (Date)
+
+  function ymd(d){
+    const y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
+    return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+
+  function render(){
+    // 헤더
+    calTitle.textContent = `${viewDate.getFullYear()}년 ${viewDate.getMonth()+1}월`;
+
+    // 기존 날짜셀 제거(요일 헤더 제외 7개)
+    [...grid.querySelectorAll('.cal-cell.day')].forEach(n=>n.remove());
+
+    const year=viewDate.getFullYear();
+    const month=viewDate.getMonth();
+
+    const first=new Date(year, month, 1);
+    const last=new Date(year, month+1, 0);
+
+    // 시작 전 공백
+    const startBlank = first.getDay();
+    for(let i=0;i<startBlank;i++){
+      const cell=document.createElement('div');
+      cell.className='cal-cell day is-muted';
+      cell.setAttribute('aria-hidden','true');
+      grid.appendChild(cell);
+    }
+
+    const today=new Date(); today.setHours(0,0,0,0);
+
+    for(let d=1; d<=last.getDate(); d++){
+      const cell=document.createElement('button');
+      cell.type='button';
+      cell.className='cal-cell day';
+      cell.textContent=d;
+
+      const current=new Date(year, month, d);
+      const isPast = current < today;
+      if(isPast){ cell.classList.add('is-muted'); cell.disabled=true; }
+
+      if(ymd(current)===ymd(today)) cell.classList.add('is-today');
+
+      if(selected && ymd(current)===ymd(selected)) cell.classList.add('is-selected');
+
+      cell.addEventListener('click', ()=>{
+        selected=current;
+        selectedInput.value = ymd(selected);
+        selectedText.textContent = `선택된 날짜: ${selectedInput.value}`;
+        // 선택 표시 갱신
+        grid.querySelectorAll('.cal-cell.day').forEach(c=>c.classList.remove('is-selected'));
+        cell.classList.add('is-selected');
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  btnPrev.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()-1); render(); });
+  btnNext.addEventListener('click', ()=>{ viewDate.setMonth(viewDate.getMonth()+1); render(); });
+  btnToday.addEventListener('click', ()=>{ viewDate=new Date(); render(); });
+
+  render();
+})();
+
+/* 간단 유효성: 날짜 선택 체크 */
+document.getElementById('bookingForm').addEventListener('submit', function(e){
+  const date = document.getElementById('selectedDate').value.trim();
+  if(!date){ e.preventDefault(); alert('달력에서 예약 날짜를 선택해주세요.'); }
+});
+</script>
+</body>
+</html>
